@@ -1,0 +1,25 @@
+import React, { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
+import { Badge, SectionHeader, StatCard } from '../components/UI'
+import { activities, stats, systems } from '../data/mockData'
+import { api } from '../lib/api'
+
+function ActivityIcon({ type }) { return <div className={`activity-icon ${type}`}><Icon name={type === 'approved' ? 'check' : type === 'risk' ? 'shield' : type === 'alert' ? 'alert' : 'database'} size={15} /></div> }
+
+export default function Dashboard({ onNavigate }) {
+  const [metrics, setMetrics] = useState(null)
+  const [portfolio, setPortfolio] = useState([])
+  const [error, setError] = useState('')
+  useEffect(() => { Promise.all([api.dashboard(), api.systems()]).then(([dashboard, inventory]) => { setMetrics(dashboard.data); setPortfolio(inventory.data) }).catch((requestError) => setError(requestError.message)) }, [])
+  const liveStats = metrics ? stats.map((stat) => ({ ...stat, value: stat.label === 'AI systems governed' ? String(metrics.systems) : stat.label === 'Open risk findings' ? String(metrics.openRiskFindings).padStart(2, '0') : stat.label === 'Reviews due this month' ? String(metrics.openEscalations).padStart(2, '0') : stat.value })) : stats
+  return <div className="page">
+    <SectionHeader eyebrow="Portfolio overview" title="Good morning, Sarah" description="Here is your responsible AI governance snapshot for Q3 2026." action="View reporting guide" onAction={() => onNavigate('kpi')} />
+    {error && <div className="global-notice" role="alert">Unable to load live dashboard metrics: {error}</div>}
+    <div className="stat-grid">{liveStats.map((stat) => <StatCard stat={stat} key={stat.label} />)}</div>
+    <div className="dashboard-grid">
+      <section className="card systems-card"><div className="card-heading"><div><h2>AI portfolio</h2><p>Systems requiring active governance</p></div><button className="text-button" onClick={() => onNavigate('inventory')}>View inventory <Icon name="arrow" size={14} /></button></div><div className="table-wrap"><table><thead><tr><th>System</th><th>Risk tier</th><th>Status</th><th>Next review</th><th /></tr></thead><tbody>{(portfolio.length ? portfolio : systems).slice(0, 4).map((system) => <tr key={system.id || system.name}><td><div className="system-name"><div className={`system-logo ${system.color}`}>{system.initials}</div><div><strong>{system.name}</strong><span>{system.owner}</span></div></div></td><td><Badge tone={system.risk.toLowerCase()}>{system.risk}</Badge></td><td><span className="live-status"><i />{system.status}</span></td><td className="muted-cell">{system.review}</td><td><button className="row-arrow" aria-label={`View ${system.name}`} onClick={() => onNavigate('inventory')}><Icon name="chevron" size={15} /></button></td></tr>)}</tbody></table></div></section>
+      <section className="card activity-card"><div className="card-heading"><div><h2>Recent activity</h2><p>Latest governance actions</p></div><button className="more-button">•••</button></div><div className="activity-list">{activities.map((item) => <div className="activity-item" key={item.title}><ActivityIcon type={item.type} /><div><strong>{item.title}</strong><span>{item.detail}</span><small>{item.time}</small></div></div>)}</div><button className="activity-footer" onClick={() => onNavigate('escalation')}>View all activity <Icon name="arrow" size={14} /></button></section>
+    </div>
+    <section className="card posture-card"><div className="card-heading"><div><h2>Governance posture</h2><p>Control performance across your AI lifecycle</p></div><button className="select-like" onClick={() => onNavigate('kpi')}>Last 6 months <Icon name="chevron" size={14} /></button></div><div className="posture-content"><div className="posture-score"><div className="score-ring"><span>82</span><small>/ 100</small></div><div><strong>Healthy posture</strong><p>Up 6 points since April</p></div></div><div className="mini-chart"><div className="chart-y"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div><div className="chart-area"><div className="grid-line line-1" /><div className="grid-line line-2" /><div className="grid-line line-3" /><svg viewBox="0 0 500 150" preserveAspectRatio="none" role="img" aria-label="Governance posture has improved from April to September"><defs><linearGradient id="fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#2a9d8f" stopOpacity=".22" /><stop offset="100%" stopColor="#2a9d8f" stopOpacity="0" /></linearGradient></defs><path d="M0 120 C35 115, 48 90, 80 100 S125 108, 160 76 S200 87, 235 68 S270 77, 305 62 S350 58, 385 45 S430 51, 460 30 S490 35, 500 22 V150 H0Z" fill="url(#fill)" /><path d="M0 120 C35 115, 48 90, 80 100 S125 108, 160 76 S200 87, 235 68 S270 77, 305 62 S350 58, 385 45 S430 51, 460 30 S490 35, 500 22" fill="none" stroke="#2a9d8f" strokeWidth="3" /></svg><div className="chart-labels"><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span></div></div></div></div></section>
+  </div>
+}

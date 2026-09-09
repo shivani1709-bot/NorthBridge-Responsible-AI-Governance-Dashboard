@@ -1,0 +1,31 @@
+{
+  "name": "northbridge-rai-governance-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "vite",
+    "server": "node server/index.js",
+    "server:test": "node --test server/index.test.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "overrides": {
+    "electron-to-chromium": "1.5.418"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^5.4.8",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "supertest": "^7.2.2"
+  }
+}
