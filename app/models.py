@@ -10,7 +10,13 @@ ReviewCategory = Literal[
     "maintainability",
     "testing",
 ]
-ReviewSeverity = Literal["critical", "high", "medium", "low"]
+
+ReviewSeverity = Literal[
+    "critical",
+    "high",
+    "medium",
+    "low",
+]
 
 
 class ReviewFinding(BaseModel):
@@ -18,7 +24,20 @@ class ReviewFinding(BaseModel):
 
     category: ReviewCategory
     severity: ReviewSeverity
-    file: str = Field(min_length=1)
-    explanation: str = Field(min_length=1)
-    suggested_fix: str = Field(min_length=1)
 
+    file: str = Field(min_length=1)
+
+    line: int | None = Field(
+        default=None,
+        ge=1,
+    )
+
+    explanation: str = Field(min_length=1)
+
+    suggested_fix: str | None = None
+
+
+class ReviewResult(BaseModel):
+    """Structured result returned by the code reviewer."""
+
+    findings: list[ReviewFinding]
